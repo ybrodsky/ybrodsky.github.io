@@ -188,128 +188,130 @@ Controller
 
             <hr/>
             <h3>Full list of settings</h3>
-            <table class="table table-bordered">
-              <thead>
-                <tr>
-                  <th>Attribute name</th>
-                  <th>Posible values</th>
-                  <th>Required</th>
-                  <th>What it does</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>displayField</td>
-                  <td>Array of values or a string</td>
-                  <td>Yes</td>
-                  <td>
-                    Sets the display property for the items in the select. 
-                    An array of properties separated by a blank space or a fixed string.
-                  </td>
-                </tr>
-                <tr>
-                  <td>displayFieldType</td>
-                  <td>'string' | 'array' (default)</td>
-                  <td>No</td>
-                  <td>
-                    Sets the type of displayField. When 'string' is set, the items in the select will be 
-                    showed with the fixed string defined in <b>displayField</b>
-                  </td>
-                </tr>
-                <tr>
-                  <td>displayFieldPrependHTML</td>
-                  <td>Any piece of HTML (use common sense)</td>
-                  <td>No</td>
-                  <td>
-                    Sets a piece of HTML to be displayed in the items in the select <i>before</i> 
-                    the displayField (whether displayFieldType is 'string' or 'array')
-                  </td>
-                </tr>
-                <tr>
-                  <td>selectProperty</td>
-                  <td>Array of strings representing the options properties (default: [])</td>
-                  <td>No</td>
-                  <td>
-                    Sets the properties that will be pushed inside your selected items array. The default option 
-                    '[]' pushes the whole object into the array.
-                  </td>
-                </tr>
-                <tr>
-                  <td>btnClass</td>
-                  <td>Any class name (default: 'btn-primary')</td>
-                  <td>No</td>
-                  <td>
-                    Sets the class name to be applied to the button
-                  </td>
-                </tr>
-                <tr>
-                  <td>btnText</td>
-                  <td>A string (default: 'Multiselect')</td>
-                  <td>No</td>
-                  <td>
-                    Sets the text the button will display
-                  </td>
-                </tr>
-                <tr>
-                  <td>btnCountSelected</td>
-                  <td>true | false (default)</td>
-                  <td>No</td>
-                  <td>
-                    When set to true, the button text will be replaced by the count of selected items. 'None selected' when no item is selected and '{n} selected' otherwise.
-                  </td>
-                </tr>
-                <tr>
-                  <td>menuClass</td>
-                  <td>Any class name</td>
-                  <td>No</td>
-                  <td>
-                    Sets the class name to be applied to the <b>ul</b> element of the list
-                  </td>
-                </tr>
-                <tr>
-                  <td>open</td>
-                  <td>true | false (default)</td>
-                  <td>No</td>
-                  <td>
-                    When set to true, the list will be open on start.
-                  </td>
-                </tr>
-                <tr>
-                  <td>selectAll</td>
-                  <td>true (default) | false</td>
-                  <td>No</td>
-                  <td>
-                    When set to true the 'Select all' option will be showed
-                  </td>
-                </tr>
-                <tr>
-                  <td>unselectAll</td>
-                  <td>true (default) | false</td>
-                  <td>No</td>
-                  <td>
-                    When set to true the 'Unselect all' option will be showed
-                  </td>
-                </tr>
-                <tr>
-                  <td>showCheckbox</td>
-                  <td>true (default) | false</td>
-                  <td>No</td>
-                  <td>
-                    When set to true a checkbox will be showed in every option
-                  </td>
-                </tr>
-                <tr>
-                  <td>selectedPrependHTML</td>
-                  <td>Any piece of HTML (use common sense)</td>
-                  <td>No</td>
-                  <td>
-                    A piece of HTML to display before the displayField in every option when it is <b>selected</b>. 
-                    <b>In order for this to work, showCheckbox property should be false</b>
-                  </td>
-                </tr>
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>Attribute name</th>
+                    <th>Posible values</th>
+                    <th>Required</th>
+                    <th>What it does</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>displayField</td>
+                    <td>Array of values or a string</td>
+                    <td>Yes</td>
+                    <td>
+                      Sets the display property for the items in the select. 
+                      An array of properties separated by a blank space or a fixed string.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>displayFieldType</td>
+                    <td>'string' | 'array' (default)</td>
+                    <td>No</td>
+                    <td>
+                      Sets the type of displayField. When 'string' is set, the items in the select will be 
+                      showed with the fixed string defined in <b>displayField</b>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>displayFieldPrependHTML</td>
+                    <td>Any piece of HTML (use common sense)</td>
+                    <td>No</td>
+                    <td>
+                      Sets a piece of HTML to be displayed in the items in the select <i>before</i> 
+                      the displayField (whether displayFieldType is 'string' or 'array')
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>selectProperty</td>
+                    <td>Array of strings representing the options properties (default: [])</td>
+                    <td>No</td>
+                    <td>
+                      Sets the properties that will be pushed inside your selected items array. The default option 
+                      '[]' pushes the whole object into the array.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>btnClass</td>
+                    <td>Any class name (default: 'btn-primary')</td>
+                    <td>No</td>
+                    <td>
+                      Sets the class name to be applied to the button
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>btnText</td>
+                    <td>A string (default: 'Multiselect')</td>
+                    <td>No</td>
+                    <td>
+                      Sets the text the button will display
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>btnCountSelected</td>
+                    <td>true | false (default)</td>
+                    <td>No</td>
+                    <td>
+                      When set to true, the button text will be replaced by the count of selected items. 'None selected' when no item is selected and '{n} selected' otherwise.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>menuClass</td>
+                    <td>Any class name</td>
+                    <td>No</td>
+                    <td>
+                      Sets the class name to be applied to the <b>ul</b> element of the list
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>open</td>
+                    <td>true | false (default)</td>
+                    <td>No</td>
+                    <td>
+                      When set to true, the list will be open on start.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>selectAll</td>
+                    <td>true (default) | false</td>
+                    <td>No</td>
+                    <td>
+                      When set to true the 'Select all' option will be showed
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>unselectAll</td>
+                    <td>true (default) | false</td>
+                    <td>No</td>
+                    <td>
+                      When set to true the 'Unselect all' option will be showed
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>showCheckbox</td>
+                    <td>true (default) | false</td>
+                    <td>No</td>
+                    <td>
+                      When set to true a checkbox will be showed in every option
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>selectedPrependHTML</td>
+                    <td>Any piece of HTML (use common sense)</td>
+                    <td>No</td>
+                    <td>
+                      A piece of HTML to display before the displayField in every option when it is <b>selected</b>. 
+                      <b>In order for this to work, showCheckbox property should be false</b>
+                    </td>
+                  </tr>
 
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
