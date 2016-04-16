@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular-animate.js"></script>
+    <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-1.3.2.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+
+    <script type="text/javascript" src="js/taira.multiselect.js"></script>
+
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <style>
+      .page-header small, .block {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" style="padding-top:1%;padding-bottom:10%">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="jumbotron">
+            <h1 class="page-header">
+              Taira Multiselect
+              <small>Simple, Easy to use and Flexible Multiselect directive for AngularJS</small>
+            </h1>
+          </div>
+          <h3>Directive attributes</h3>
+          <table class="table table-bordered">
+            <tbody>
+              <tr>
+                <td>Model</td>
+                <td>The scope array where you will be storing your selected items</td>
+              </tr>
+              <tr>
+                <td>Options</td>
+                <td>The scope array that acts as a source for the select options</td>
+              </tr>
+              <tr>
+                <td>Settings</td>
+                <td>An object containing the settings for the select</td>
+              </tr>
+            </tbody>
+          </table>
+          <h3>Basic setup</h3>
+          <div ng-controller="MainCtrl">
+HTML
+<pre>
+  &lt;taira-multiselect model=&quot;selected&quot; options=&quot;dataSet&quot; settings=&quot;settings&quot;&gt;&lt;/taira-multiselect&gt;
+</pre>
+
+Controller
+<pre>
+  $scope.selected = [];
+  $scope.dataSet = [
+    {id: 1, name: 'Alejo', surname: 'Gerlingstein'},
+    {id: 2, name: 'Topo', surname: 'Noesuficiente'},
+    {id: 2, name: 'Vivian', surname: 'Redox'},
+  ];
+  $scope.settings = {
+    displayField: ['name']        
+  };
+</pre>
+            <div class="row">
+              <div class="col-md-2">
+                <span class="block">Rendered Html</span>
+                <taira-multiselect model="selected" options="dataSet" settings="settings"></taira-multiselect>
+              </div>
+              <div class="col-md-10">
+                $scope.selected
+<pre>
+  {{selected}}
+</pre>      
+              </div>
+            </div>
+            <hr/>
+            <h3>Selected fields</h3>
+            <p>
+              By default Taira Multiselect pushes the whole object into the array of selected items. 
+              You can however specify which fields you want to push by changing the <b>selectProperty</b> setting.
+            </p>
+Controller
+<pre>
+  $scope.settings = {
+    displayField: ['name'],
+    selectProperty: ['id', 'name']     
+  };
+</pre>
+
+            <div class="row">
+              <div class="col-md-2">
+                <span class="block">Rendered Html</span>
+                <taira-multiselect model="selected2" options="dataSet" settings="settings1"></taira-multiselect>
+              </div>
+              <div class="col-md-10">
+                $scope.selected
+<pre>
+  {{selected2}}
+</pre>      
+              </div>
+            </div>
+
+            <hr/>
+            <h3>Display options</h3>
+            <p>
+              <b>The setting displayField</b> is an Array of keys to be 
+              displayed in the options inside the select
+            </p>
+Controller
+<pre>
+  $scope.settings = {
+    displayField: ['name', 'surname']        
+  };
+</pre>
+
+            <span class="block">Rendered Html</span>
+            <taira-multiselect model="selected" options="dataSet" settings="settings2"></taira-multiselect>
+
+            <br><br>
+            <p>
+              It is also posible to display a fixed string by changing the value of the settings 
+              <b>displayField</b> and <b>displayFieldType</b>
+            </p>
+
+Controller
+<pre>
+  $scope.settings = {
+    displayField: 'This is an option',
+    displayFieldType: 'string'        
+  };
+</pre>            
+
+            <span class="block">Rendered Html</span>
+            <taira-multiselect model="selected" options="dataSet" settings="settings3"></taira-multiselect>
+            <br><br>
+
+            <p>
+              If you want to add some custom content before the displayed field -whether you are 
+              displaying a fixed string as the example above or an array of properties- you can by 
+              modifing the <b>displayFieldPrependHTML</b> setting.
+            </p>
+
+Controller
+<pre>
+  $scope.settings = {
+    displayField: ['name', 'surname']
+    displayFieldPrependHTML: '&lt;i class=&quot;fa fa-user&quot;&gt;&lt;/i&gt; ',
+    showCheckbox: false   
+  };
+</pre>    
+
+            <span class="block">Rendered Html</span>
+            <taira-multiselect model="selected" options="dataSet" settings="settings4"></taira-multiselect>
+            <br><br>
+
+            <p>
+              In order to add a custom visual mark for the selected items, you can modify
+               the <b>selectedPrependHTML</b> property from the settings object. <br>
+               <b>NOTE:</b> In order for this to work you have to disable the checkboxes with the property 
+               <b>showCheckbox: false</b>
+            </p>
+
+Controller
+<pre>
+  $scope.settings = {
+    displayField: ['name', 'surname']
+    showCheckbox: false,
+    selectedPrependHTML: '&lt;i class=&quot;fa fa-check&quot;&gt;&lt;/i&gt; '
+  };
+</pre>  
+
+            <span class="block">Rendered Html</span>
+            <taira-multiselect model="selected" options="dataSet" settings="settings5"></taira-multiselect>
+            <br><br>
+
+            <hr/>
+            <h3>Full list of settings</h3>
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Attribute name</th>
+                  <th>Posible values</th>
+                  <th>Required</th>
+                  <th>What it does</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>displayField</td>
+                  <td>Array of values or a string</td>
+                  <td>Yes</td>
+                  <td>
+                    Sets the display property for the items in the select. 
+                    An array of properties separated by a blank space or a fixed string.
+                  </td>
+                </tr>
+                <tr>
+                  <td>displayFieldType</td>
+                  <td>'string' | 'array' (default)</td>
+                  <td>No</td>
+                  <td>
+                    Sets the type of displayField. When 'string' is set, the items in the select will be 
+                    showed with the fixed string defined in <b>displayField</b>
+                  </td>
+                </tr>
+                <tr>
+                  <td>displayFieldPrependHTML</td>
+                  <td>Any piece of HTML (use common sense)</td>
+                  <td>No</td>
+                  <td>
+                    Sets a piece of HTML to be displayed in the items in the select <i>before</i> 
+                    the displayField (whether displayFieldType is 'string' or 'array')
+                  </td>
+                </tr>
+                <tr>
+                  <td>selectProperty</td>
+                  <td>Array of strings representing the options properties (default: [])</td>
+                  <td>No</td>
+                  <td>
+                    Sets the properties that will be pushed inside your selected items array. The default option 
+                    '[]' pushes the whole object into the array.
+                  </td>
+                </tr>
+                <tr>
+                  <td>btnClass</td>
+                  <td>Any class name (default: 'btn-primary')</td>
+                  <td>No</td>
+                  <td>
+                    Sets the class name to be applied to the button
+                  </td>
+                </tr>
+                <tr>
+                  <td>btnText</td>
+                  <td>A string (default: 'Multiselect')</td>
+                  <td>No</td>
+                  <td>
+                    Sets the text the button will display
+                  </td>
+                </tr>
+                <tr>
+                  <td>btnCountSelected</td>
+                  <td>true | false (default)</td>
+                  <td>No</td>
+                  <td>
+                    When set to true, the button text will be replaced by the count of selected items. 'None selected' when no item is selected and '{n} selected' otherwise.
+                  </td>
+                </tr>
+                <tr>
+                  <td>menuClass</td>
+                  <td>Any class name</td>
+                  <td>No</td>
+                  <td>
+                    Sets the class name to be applied to the <b>ul</b> element of the list
+                  </td>
+                </tr>
+                <tr>
+                  <td>open</td>
+                  <td>true | false (default)</td>
+                  <td>No</td>
+                  <td>
+                    When set to true, the list will be open on start.
+                  </td>
+                </tr>
+                <tr>
+                  <td>selectAll</td>
+                  <td>true (default) | false</td>
+                  <td>No</td>
+                  <td>
+                    When set to true the 'Select all' option will be showed
+                  </td>
+                </tr>
+                <tr>
+                  <td>unselectAll</td>
+                  <td>true (default) | false</td>
+                  <td>No</td>
+                  <td>
+                    When set to true the 'Unselect all' option will be showed
+                  </td>
+                </tr>
+                <tr>
+                  <td>showCheckbox</td>
+                  <td>true (default) | false</td>
+                  <td>No</td>
+                  <td>
+                    When set to true a checkbox will be showed in every option
+                  </td>
+                </tr>
+                <tr>
+                  <td>selectedPrependHTML</td>
+                  <td>Any piece of HTML (use common sense)</td>
+                  <td>No</td>
+                  <td>
+                    A piece of HTML to display before the displayField in every option when it is <b>selected</b>. 
+                    <b>In order for this to work, showCheckbox property should be false</b>
+                  </td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="text-center" style="padding-bottom:10px">
+            ¿Quién te conoce?
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </body>
+
+  <script>
+    var myApp = angular.module('myApp', ['ui.bootstrap', 'taira-multiselect']);
+
+    myApp.controller('MainCtrl', function($scope) {
+      $scope.selected = [];
+      $scope.selected2 = [];
+
+      $scope.dataSet = [
+        {id: 1, name: 'Alejo', surname: 'Gerlingstein'},
+        {id: 2, name: 'Topo', surname: 'Noesuficiente'},
+        {id: 2, name: 'Vivian', surname: 'Redox'},
+      ];
+
+      $scope.settings = {
+        displayField: ['name']        
+      };
+
+      $scope.settings1 = {
+        displayField: ['name'],
+        selectProperty: ['id', 'name']
+      };
+
+      $scope.settings2 = {
+        displayField: ['name', 'surname']
+      };
+
+      $scope.settings3 = {
+        displayField: 'This is an option',
+        displayFieldType: 'string'
+      };
+
+      $scope.settings4 = {
+        displayField: ['name', 'surname'],
+        displayFieldPrependHTML: '<i class="fa fa-user"></i> ',
+        showCheckbox: false
+      };
+
+      $scope.settings5 = {
+        displayField: ['name', 'surname'],
+        selectedPrependHTML: '<i class="fa fa-check"></i> ',
+        showCheckbox: false
+      };
+    });
+  </script>
+</html>
