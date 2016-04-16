@@ -6,15 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular-animate.js"></script>
     <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-1.3.2.js"></script>
     <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
 
     <script type="text/javascript" src="js/taira.multiselect.js"></script>
-
-
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/styles/vs.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.3.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -22,6 +22,16 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-76465899-1', 'auto');
+      ga('send', 'pageview');
+
+    </script>
     <style>
       .page-header small, .block {
         display: block;
@@ -34,9 +44,15 @@
         <div class="col-md-12">
           <div class="jumbotron">
             <h1 class="page-header">
+              
               Taira Multiselect
               <small>Simple, Easy to use and Flexible Multiselect directive for AngularJS</small>
+              
+
             </h1>
+            <a href="https://github.com/ybrodsky/angularjs-taira-multiselect/" class="btn btn-default pull-right">
+              <i class="fa fa-github"></i> View on Github
+            </a>
           </div>
           <h3>Directive attributes</h3>
           <table class="table table-bordered">
@@ -59,11 +75,14 @@
           <div ng-controller="MainCtrl">
 HTML
 <pre>
+  <code class="html">
   &lt;taira-multiselect model=&quot;selected&quot; options=&quot;dataSet&quot; settings=&quot;settings&quot;&gt;&lt;/taira-multiselect&gt;
+  </code>
 </pre>
 
 Controller
 <pre>
+  <code class="js">
   $scope.selected = [];
   $scope.dataSet = [
     {id: 1, name: 'Alejo', surname: 'Gerlingstein'},
@@ -73,6 +92,7 @@ Controller
   $scope.settings = {
     displayField: ['name']        
   };
+  </code>
 </pre>
             <div class="row">
               <div class="col-md-2">
@@ -82,7 +102,9 @@ Controller
               <div class="col-md-10">
                 $scope.selected
 <pre>
+  <code class="js">
   {{selected}}
+  </code>
 </pre>      
               </div>
             </div>
@@ -94,10 +116,12 @@ Controller
             </p>
 Controller
 <pre>
+  <code class="js">
   $scope.settings = {
     displayField: ['name'],
     selectProperty: ['id', 'name']     
   };
+  </code>
 </pre>
 
             <div class="row">
@@ -108,7 +132,9 @@ Controller
               <div class="col-md-10">
                 $scope.selected
 <pre>
+  <code class="js">
   {{selected2}}
+  </code>
 </pre>      
               </div>
             </div>
@@ -121,9 +147,11 @@ Controller
             </p>
 Controller
 <pre>
+  <code class="js">
   $scope.settings = {
     displayField: ['name', 'surname']        
   };
+  </code>
 </pre>
 
             <span class="block">Rendered Html</span>
@@ -137,10 +165,12 @@ Controller
 
 Controller
 <pre>
+  <code class="js">
   $scope.settings = {
     displayField: 'This is an option',
     displayFieldType: 'string'        
   };
+  </code>
 </pre>            
 
             <span class="block">Rendered Html</span>
@@ -155,11 +185,13 @@ Controller
 
 Controller
 <pre>
+  <code class="js">
   $scope.settings = {
     displayField: ['name', 'surname']
     displayFieldPrependHTML: '&lt;i class=&quot;fa fa-user&quot;&gt;&lt;/i&gt; ',
     showCheckbox: false   
   };
+  </code>
 </pre>    
 
             <span class="block">Rendered Html</span>
@@ -175,11 +207,13 @@ Controller
 
 Controller
 <pre>
+  <code class="js">
   $scope.settings = {
     displayField: ['name', 'surname']
     showCheckbox: false,
     selectedPrependHTML: '&lt;i class=&quot;fa fa-check&quot;&gt;&lt;/i&gt; '
   };
+  </code>
 </pre>  
 
             <span class="block">Rendered Html</span>
@@ -321,7 +355,10 @@ Controller
       <div class="row">
         <div class="col-md-12">
           <div class="text-center" style="padding-bottom:10px">
-            ¿Quién te conoce?
+            ¿Quién te conoce? | 
+            <a href="https://github.com/ybrodsky/angularjs-taira-multiselect/">
+              <i class="fa fa-github"></i> View on Github
+            </a>
           </div>
         </div>
       </div>
@@ -333,6 +370,9 @@ Controller
     var myApp = angular.module('myApp', ['ui.bootstrap', 'taira-multiselect']);
 
     myApp.controller('MainCtrl', function($scope) {
+      //What are you doing here?
+      //The docs aren't clear?
+      //Let me know @github
       $scope.selected = [];
       $scope.selected2 = [];
 
