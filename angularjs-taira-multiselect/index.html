@@ -127,9 +127,7 @@ Controller
               <div class="col-md-10">
                 $scope.selected
 <pre>
-  <code class="js">
   {{selected}}
-  </code>
 </pre>
               </div>
             </div>
@@ -161,9 +159,7 @@ Controller
               <div class="col-md-10">
                 $scope.selected
 <pre>
-  <code class="js">
   {{selected2}}
-  </code>
 </pre>
               </div>
             </div>
@@ -191,7 +187,7 @@ Controller
 </pre>
 
             <span class="block">Rendered Html</span>
-            <taira-multiselect model="selected" options="dataSet" settings="settings2"></taira-multiselect>
+            <taira-multiselect model="selected3" options="dataSet" settings="settings2"></taira-multiselect>
 
             <br><br>
 
@@ -216,7 +212,7 @@ Controller
 </pre>
 
             <span class="block">Rendered Html</span>
-            <taira-multiselect model="selected" options="dataSet" settings="settings4"></taira-multiselect>
+            <taira-multiselect model="selected4" options="dataSet" settings="settings4"></taira-multiselect>
             <br><br>
 
             <hr/>
@@ -280,6 +276,8 @@ Controller
       //Let me know @github
       $scope.selected = [];
       $scope.selected2 = [];
+      $scope.selected3 = [];
+      $scope.selected4 = [];
 
       $scope.dataSet = [
         {id: 1, name: 'Alejo', surname: 'Gerlingstein', address: {street: 'St', number: 12}},
