@@ -15,7 +15,7 @@ const Scene = (() => {
   const shipWrap = document.getElementById("ship-wrap");
   const recenterBtn = document.getElementById("btn-recenter");
 
-  const ISO_SQUASH = 0.36;     // isometric tilt: orbits are squashed vertically
+  const ISO_SQUASH = MAP_ISO_SQUASH; // isometric tilt: orbits are squashed vertically
   const ZOOM_MAX = 3.0;
   const CAM_RATE = 0.0015;     // exponential approach rate per ms (auto camera)
   const HEADING_RATE = 0.004;  // ship rotation smoothing
@@ -106,7 +106,7 @@ const Scene = (() => {
     if (phase === "complete") return { pos: dock, mode: "docked", target: null };
 
     if (mission.type === "courier") {
-      const dest = courierDestPos(mission);
+      const dest = courierDestPos(mission, now);
       const frac = clamp((now - mission.startedAt) / (mission.returnEndsAt - mission.startedAt), 0, 1);
       return frac < 0.5
         ? { pos: lerpP(dock, dest, frac * 2), mode: "flying", target: dest }
@@ -535,6 +535,41 @@ const Scene = (() => {
     }
   }
 
+  // Dashed route from ship to destination while in transit.
+  function drawTravelRoute(ship, t) {
+    if (ship.mode !== "flying" || !ship.target) return;
+    const from = w2s(ship.pos);
+    const to = w2s(ship.target);
+    const z = clamp(camera.zoom, 0.35, 1.8);
+    const dash = 10 * z;
+    const gap = 7 * z;
+
+    ctx.save();
+    ctx.strokeStyle = "rgba(120, 200, 220, 0.42)";
+    ctx.lineWidth = Math.max(1.2, 1.8 * z);
+    ctx.lineCap = "round";
+    ctx.setLineDash([dash, gap]);
+    ctx.lineDashOffset = -(t * 0.035) % (dash + gap);
+    ctx.shadowColor = "rgba(120, 200, 220, 0.55)";
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+    ctx.stroke();
+
+    // destination ping
+    ctx.setLineDash([]);
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = "rgba(120, 200, 220, 0.55)";
+    ctx.beginPath();
+    ctx.arc(to.x, to.y, Math.max(2.5, 3.5 * z), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(180, 235, 255, 0.75)";
+    ctx.lineWidth = Math.max(1, 1.2 * z);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   // Engine trail left behind while the ship burns
   function drawTrail(t) {
     while (trail.length && t - trail[0].born > 900) trail.shift();
@@ -556,7 +591,7 @@ const Scene = (() => {
     ctx.restore();
   }
 
-  function drawFrame(now) {
+  function drawFrame(now, ship) {
     const g = ctx.createLinearGradient(0, 0, 0, height);
     g.addColorStop(0, "#040816");
     g.addColorStop(1, "#0a1228");
@@ -570,6 +605,7 @@ const Scene = (() => {
     for (const [id, sys] of Object.entries(STAR_SYSTEMS)) drawSystem(id, sys, now);
 
     drawTrail(now);
+    drawTravelRoute(ship, now);
     drawMiningBeam(now);
   }
 
@@ -617,7 +653,7 @@ const Scene = (() => {
       const ship = shipWorldState(now);
       updateCamera(ship, dt);
       beamTarget = ship.mode === "mining" ? findBeamTarget(now, ship.pos) : null;
-      drawFrame(now);
+      drawFrame(now, ship);
       syncShipClasses(ship.mode);
       positionShip(ship, dt);
       if (ship.mode === "flying" && now - lastTrailAt > 40) {

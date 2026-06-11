@@ -103,8 +103,10 @@ const STAR_SYSTEMS = {
     star: { r: 36, core0: "#fff7e0", core1: "#ffd76a", core2: "#ff9330", halo: "255, 180, 80" },
     belt: { dist: 240, count: 36, colors: ["#8a939e", "#6b6f76", "#56524c"] },
     bodies: [
-      { name: "KORVAX I",  dist: 105, speed: 0.00005, phase: 1.7, r: 6, c1: "#d8b287", c2: "#5e4426" },
-      { name: "KORVAX II", dist: 170, speed: 0.00003, phase: 4.3, r: 9, c1: "#b07a5a", c2: "#3c241c", ring: true },
+      { name: "EMBERSHALE",  dist: 95,  speed: 0.000055, phase: 1.7, r: 5,  c1: "#e8c090", c2: "#5a3a20" },
+      { name: "ANVIL",       dist: 155, speed: 0.000038, phase: 4.3, r: 8,  c1: "#b07a5a", c2: "#3c241c", ring: true },
+      { name: "BRIMSTONE",   dist: 215, speed: 0.000028, phase: 0.9, r: 6,  c1: "#d8b287", c2: "#5e4426" },
+      { name: "CINDERWAKE",  dist: 310, speed: 0.000018, phase: 3.1, r: 12, c1: "#8a7060", c2: "#2a2018" },
     ],
   },
   draban: {
@@ -114,7 +116,10 @@ const STAR_SYSTEMS = {
     star: { r: 26, core0: "#ffe9d6", core1: "#ff9a6a", core2: "#cf4a18", halo: "255, 130, 80" },
     belt: { dist: 190, count: 30, colors: ["#9aa3ad", "#7d7368", "#5c5f66"] },
     bodies: [
-      { name: "DRABAN I", dist: 100, speed: 0.00004, phase: 0.6, r: 7, c1: "#caa27e", c2: "#4a2e1c" },
+      { name: "EMBERFALL",  dist: 85,  speed: 0.000048, phase: 0.6, r: 5,  c1: "#e0a878", c2: "#4a2e1c" },
+      { name: "CINNABAR",   dist: 130, speed: 0.000036, phase: 2.8, r: 7,  c1: "#c87858", c2: "#3a2010" },
+      { name: "SLAGRIFT",   dist: 175, speed: 0.000030, phase: 5.4, r: 6,  c1: "#caa27e", c2: "#4a2e1c" },
+      { name: "RUSTMOOR",   dist: 255, speed: 0.000020, phase: 1.2, r: 10, c1: "#9a7868", c2: "#302018", ring: true },
     ],
   },
   cryos: {
@@ -124,8 +129,10 @@ const STAR_SYSTEMS = {
     star: { r: 40, core0: "#f0fbff", core1: "#9fd8ff", core2: "#4a90e0", halo: "120, 190, 255" },
     belt: { dist: 250, count: 34, colors: ["#4db8ff", "#2b5f8f", "#27496b"] },
     bodies: [
-      { name: "CRYOS I",  dist: 110, speed: 0.000045, phase: 0.8, r: 6,  c1: "#bfe8ff", c2: "#1d3f63" },
-      { name: "CRYOS II", dist: 185, speed: 0.000026, phase: 3.5, r: 10, c1: "#6fb4e8", c2: "#102a44", ring: true },
+      { name: "RIMEPOINT",  dist: 100, speed: 0.000048, phase: 0.8, r: 5,  c1: "#d8f0ff", c2: "#1a3550" },
+      { name: "GLACIERA",   dist: 165, speed: 0.000032, phase: 3.5, r: 8,  c1: "#bfe8ff", c2: "#1d3f63" },
+      { name: "FROSTVEIL",  dist: 225, speed: 0.000024, phase: 5.7, r: 10, c1: "#6fb4e8", c2: "#102a44", ring: true },
+      { name: "DEEPAZURE",  dist: 320, speed: 0.000016, phase: 2.2, r: 13, c1: "#4a90c8", c2: "#0a1a30" },
     ],
   },
   thule: {
@@ -135,8 +142,10 @@ const STAR_SYSTEMS = {
     star: { r: 32, core0: "#f4ffff", core1: "#bfeaf0", core2: "#5aa8c0", halo: "140, 220, 235" },
     belt: { dist: 210, count: 30, colors: ["#6fb4e8", "#2b5f8f", "#1f3a56"] },
     bodies: [
-      { name: "THULE I",  dist: 95,  speed: 0.00005,  phase: 5.2, r: 5, c1: "#d8eef5", c2: "#23445a" },
-      { name: "THULE II", dist: 155, speed: 0.000028, phase: 2.0, r: 8, c1: "#88b8cc", c2: "#142e3e" },
+      { name: "WHITENOSE",   dist: 90,  speed: 0.000052, phase: 5.2, r: 5,  c1: "#eef8fc", c2: "#2a4a5a" },
+      { name: "PERMAFROST",  dist: 140, speed: 0.000034, phase: 2.0, r: 7,  c1: "#d8eef5", c2: "#23445a" },
+      { name: "SHIVARA",     dist: 195, speed: 0.000026, phase: 4.1, r: 8,  c1: "#88b8cc", c2: "#142e3e" },
+      { name: "NIGHTFROST",  dist: 275, speed: 0.000018, phase: 0.5, r: 11, c1: "#5a90a8", c2: "#0e2030", ring: true },
     ],
   },
   erebus: {
@@ -146,14 +155,16 @@ const STAR_SYSTEMS = {
     star: { r: 46, core0: "#f4e8ff", core1: "#c89aff", core2: "#7a3ad0", halo: "160, 100, 255" },
     belt: { dist: 280, count: 38, colors: ["#b86bff", "#3a2454", "#46306b"] },
     bodies: [
-      { name: "EREBUS I",  dist: 120, speed: 0.00004,  phase: 2.4, r: 7,  c1: "#c9a0ff", c2: "#2a1646" },
-      { name: "EREBUS II", dist: 200, speed: 0.000022, phase: 5.1, r: 11, c1: "#7a55b0", c2: "#170b2c" },
+      { name: "TWILIGHT",     dist: 110, speed: 0.000044, phase: 2.4, r: 6,  c1: "#d8b0ff", c2: "#2a1646" },
+      { name: "SHADEWROUGHT", dist: 175, speed: 0.000030, phase: 5.1, r: 9,  c1: "#c9a0ff", c2: "#2a1646" },
+      { name: "UMBRAL",       dist: 245, speed: 0.000022, phase: 1.8, r: 11, c1: "#7a55b0", c2: "#170b2c", ring: true },
+      { name: "VOIDMIRE",     dist: 350, speed: 0.000014, phase: 4.6, r: 14, c1: "#5a3888", c2: "#0a0618" },
     ],
   },
 };
 
-// Courier runs fly to an off-map waypoint this far from the cluster core.
-const COURIER_DEST_DISTANCE = { min: 4200, max: 5600 };
+// Isometric squash for orbital body positions (shared by logic + scene).
+const MAP_ISO_SQUASH = 0.36;
 
 // ---------- courier contracts ----------
 // Dynamically generated money runs. The ship travels the whole
@@ -173,12 +184,6 @@ const COURIER_TIERS = {
   3: { baseSeconds: 1680, fuelCost: 90, minCredits: 1500, maxCredits: 2000,
        materialId: "voidShard",     minMaterials: 3, maxMaterials: 7 },
 };
-
-const COURIER_DESTINATIONS = [
-  "Outpost Meridian", "Kepler Relay", "Port Caldera", "Nyx Terminal",
-  "Halcyon Depot", "Vesta Beacon", "Tycho Gate", "Oberon Yards",
-  "Cygnus Waystation", "Drift Colony 7",
-];
 
 const COURIER_CARGO_TYPES = [
   "Medical Supplies", "Station Spare Parts", "Encrypted Data Cores",

@@ -49,8 +49,52 @@ function missionTargetSystemId(mission) {
   return systemsForMaterial(mission.materialId)[0] || HOME_SYSTEM_ID;
 }
 
-function courierDestPos(mission) {
-  return mission.destPos || { x: COURIER_DEST_DISTANCE.min, y: -COURIER_DEST_DISTANCE.min };
+// All non-home planets that courier contracts can deliver to.
+function courierPlanets() {
+  const planets = [];
+  for (const [systemId, sys] of Object.entries(STAR_SYSTEMS)) {
+    (sys.bodies || []).forEach((body, bodyIdx) => {
+      if (body.home) return;
+      planets.push({
+        systemId,
+        bodyIdx,
+        name: body.name,
+        systemName: sys.name,
+      });
+    });
+  }
+  return planets;
+}
+
+function planetWorldPos(systemId, bodyIdx, t) {
+  const sys = STAR_SYSTEMS[systemId];
+  const body = sys.bodies[bodyIdx];
+  const a = body.phase + t * body.speed;
+  return {
+    x: sys.pos.x + Math.cos(a) * body.dist,
+    y: sys.pos.y + Math.sin(a) * body.dist * MAP_ISO_SQUASH,
+  };
+}
+
+// Docking point just outside the planet's surface, facing away from the sun.
+function courierPlanetPos(mission, t) {
+  if (mission.targetSystemId != null && mission.targetBodyIdx != null) {
+    const sys = STAR_SYSTEMS[mission.targetSystemId];
+    const body = sys.bodies[mission.targetBodyIdx];
+    const p = planetWorldPos(mission.targetSystemId, mission.targetBodyIdx, t);
+    const dx = p.x - sys.pos.x;
+    const dy = p.y - sys.pos.y;
+    const d = Math.hypot(dx, dy) || 1;
+    const pad = body.r + 18;
+    return { x: p.x + (dx / d) * pad, y: p.y + (dy / d) * pad };
+  }
+  // legacy saves that still have an off-map waypoint
+  if (mission.destPos) return mission.destPos;
+  return { x: 0, y: 0 };
+}
+
+function courierDestPos(mission, t) {
+  return courierPlanetPos(mission, t ?? Date.now());
 }
 
 function missionDurations(materialId) {
@@ -123,10 +167,13 @@ function generateCourierOffer() {
   const tier = randInt(1, 3);
   const cfg = COURIER_TIERS[tier];
   const jitter = 1 + (Math.random() * 2 - 1) * COURIER_TIME_JITTER;
+  const planet = pickRandom(courierPlanets());
   return {
     id: "c_" + Date.now() + "_" + Math.floor(Math.random() * 1e6),
     tier,
-    destination: pickRandom(COURIER_DESTINATIONS),
+    destination: planet.name + ", " + planet.systemName + " System",
+    targetSystemId: planet.systemId,
+    targetBodyIdx: planet.bodyIdx,
     cargo: pickRandom(COURIER_CARGO_TYPES),
     durationSeconds: Math.round(cfg.baseSeconds * jitter),
     fuelCost: cfg.fuelCost,
@@ -138,6 +185,16 @@ function generateCourierOffer() {
 
 function ensureCourierOffers() {
   if (!Array.isArray(GameState.courierOffers)) GameState.courierOffers = [];
+  GameState.courierOffers = GameState.courierOffers.map((offer) => {
+    if (offer.targetSystemId != null) return offer;
+    const planet = pickRandom(courierPlanets());
+    return {
+      ...offer,
+      destination: planet.name + ", " + planet.systemName + " System",
+      targetSystemId: planet.systemId,
+      targetBodyIdx: planet.bodyIdx,
+    };
+  });
   while (GameState.courierOffers.length < COURIER_OFFER_COUNT) {
     GameState.courierOffers.push(generateCourierOffer());
   }
@@ -161,9 +218,6 @@ function startCourierMission(offerId) {
   const now = Date.now();
   const durationMs = offer.durationSeconds * reactorMultiplier() * 1000;
   const endsAt = now + durationMs;
-  // off-map waypoint the ship flies to and back (random heading)
-  const destAngle = Math.random() * Math.PI * 2;
-  const destDist = randInt(COURIER_DEST_DISTANCE.min, COURIER_DEST_DISTANCE.max);
 
   GameState.player.credits -= offer.fuelCost;
   GameState.currentMission = {
@@ -178,14 +232,12 @@ function startCourierMission(offerId) {
     completedAt: 0,
     fuelCost: offer.fuelCost,
     destination: offer.destination,
+    targetSystemId: offer.targetSystemId,
+    targetBodyIdx: offer.targetBodyIdx,
     cargo: offer.cargo,
     rewardCredits: offer.rewardCredits,
     rewardMaterialId: offer.rewardMaterialId,
     rewardMaterialQty: offer.rewardMaterialQty,
-    destPos: {
-      x: Math.round(Math.cos(destAngle) * destDist),
-      y: Math.round(Math.sin(destAngle) * destDist),
-    },
   };
 
   // replace the taken contract so the board stays full
@@ -193,7 +245,7 @@ function startCourierMission(offerId) {
   ensureCourierOffers();
 
   logEvent("Courier contract accepted: " + offer.cargo + " → " + offer.destination + ".");
-  logEvent("Ship departed Asterion Station. Fuel: -" + offer.fuelCost + " cr.");
+  logEvent("Ship departed for " + offer.destination + ". Fuel: -" + offer.fuelCost + " cr.");
   saveState();
   return { ok: true };
 }
@@ -257,7 +309,7 @@ function currentLocationName(now) {
   if (!mission) return "Asterion Station";
   const phase = missionPhase(mission, now);
   if (phase === "complete") return "Asterion Station";
-  if (mission.type === "courier") return "Deep Space — " + mission.destination;
+  if (mission.type === "courier") return mission.destination;
   const sys = STAR_SYSTEMS[missionTargetSystemId(mission)];
   if (phase === "departing") return "In Transit — " + sys.name + " System";
   if (phase === "mining") return sys.name + " System";
