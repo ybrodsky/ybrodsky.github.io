@@ -481,6 +481,11 @@ const UI = (() => {
       saveState();
       renderAll();
     });
+    el('btn-add-credits').addEventListener('click', () => {
+      GameState.player.credits += 100;
+      saveState();
+      renderAll();
+    });
     el('btn-reset').addEventListener('click', () => {
       if (!confirm('Reset all progress?')) return;
       resetGame();
