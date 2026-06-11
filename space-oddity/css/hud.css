@@ -267,29 +267,34 @@ html, body {
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid rgba(0, 255, 255, 0.2);
+  touch-action: none; /* one finger pans the map, two pinch-zoom */
 }
 
-#space-canvas { display: block; width: 100%; height: 100%; }
+#space-canvas { display: block; width: 100%; height: 100%; cursor: grab; }
 
-#scene-fade {
+#space-canvas:active { cursor: grabbing; }
+
+#map-controls {
   position: absolute;
-  inset: 0;
-  background: #01030a;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.6s ease;
-  z-index: 5;
+  right: 12px;
+  bottom: 12px;
+  z-index: 6;
 }
 
-#scene-fade.active { opacity: 1; }
+#btn-recenter {
+  opacity: 0.45;
+  transition: opacity 0.3s;
+}
+
+#btn-recenter.visible { opacity: 1; }
 
 /* ---------- ship ---------- */
 
+/* positioned/scaled/rotated every frame by scene.js */
 #ship-wrap {
   position: absolute;
   left: 50%;
-  bottom: 22%;
-  margin-left: -75px;
+  top: 50%;
   z-index: 3;
   filter: drop-shadow(0 0 10px rgba(38, 198, 255, 0.25));
 }

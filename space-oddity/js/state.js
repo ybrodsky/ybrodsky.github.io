@@ -20,7 +20,6 @@ function defaultGameState() {
     eventLog: ["> Systems online. Welcome aboard, Commander."],
     selectedPanel: "mine",          // "mine" | "market" | "upgrade"
     selectedShipPart: null,         // "drill" | "cargo" | "reactor" | null
-    currentScene: "station",
   };
 }
 

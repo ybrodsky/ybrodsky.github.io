@@ -6,21 +6,6 @@
 
 let lastPhase = null;
 
-function syncSceneToState(animate) {
-  const now = Date.now();
-  const target = deriveScene(now);
-  GameState.currentScene = target;
-  Scene.setScene(target, animate);
-
-  const mission = GameState.currentMission;
-  if (!mission) {
-    Scene.setShipMode("docked");
-  } else {
-    const phase = missionPhase(mission, now);
-    Scene.setShipMode(phase === "mining" ? "mining" : "flying");
-  }
-}
-
 function tick() {
   const now = Date.now();
   const mission = GameState.currentMission;
@@ -31,16 +16,17 @@ function tick() {
     lastPhase = phase;
 
     if (mission && phase === "mining") {
-      logEvent("Arrived at " + MISSIONS[mission.materialId].sceneName + ". Mining commenced.");
+      logEvent("Arrived at the " + STAR_SYSTEMS[missionTargetSystemId(mission)].name +
+        " system. Mining commenced.");
     } else if (mission && phase === "returning") {
       logEvent("Cargo hold secured. Returning to Asterion Station.");
     }
-    syncSceneToState(true);
+    Scene.focusShip(); // re-frame the camera for the new phase
     UI.renderAll();
   }
 
   // mission completion
-  if (mission && phase === "complete" && !Scene.isTransitioning()) {
+  if (mission && phase === "complete") {
     const done = completeMissionIfDone(now);
     if (done) {
       if (done.type === "courier") {
@@ -59,7 +45,7 @@ function tick() {
           <div class="hint">Fuel spent: ${done.fuelCost} cr</div>`);
       }
       lastPhase = null;
-      syncSceneToState(true);
+      Scene.focusShip();
       UI.renderAll();
     }
   }
@@ -95,7 +81,6 @@ function boot() {
   lastPhase = missionPhase(GameState.currentMission, now);
 
   UI.bindEvents();
-  syncSceneToState(false);
   UI.renderAll();
   saveState();
 

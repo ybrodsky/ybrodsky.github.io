@@ -38,6 +38,21 @@ function formatDuration(seconds) {
 
 // ---------- missions ----------
 
+// All systems whose asteroid belt yields the given material.
+function systemsForMaterial(materialId) {
+  return Object.keys(STAR_SYSTEMS).filter((id) => STAR_SYSTEMS[id].resource === materialId);
+}
+
+// Saved missions from before the cluster map have no targetSystemId.
+function missionTargetSystemId(mission) {
+  if (mission.targetSystemId && STAR_SYSTEMS[mission.targetSystemId]) return mission.targetSystemId;
+  return systemsForMaterial(mission.materialId)[0] || HOME_SYSTEM_ID;
+}
+
+function courierDestPos(mission) {
+  return mission.destPos || { x: COURIER_DEST_DISTANCE.min, y: -COURIER_DEST_DISTANCE.min };
+}
+
 function missionDurations(materialId) {
   const cfg = MISSIONS[materialId];
   const mult = reactorMultiplier();
@@ -70,6 +85,7 @@ function startMission(materialId) {
   const cfg = MISSIONS[materialId];
   const d = missionDurations(materialId);
   const now = Date.now();
+  const targetSystemId = pickRandom(systemsForMaterial(materialId));
 
   GameState.player.credits -= cfg.fuelCost;
   GameState.currentMission = {
@@ -83,12 +99,12 @@ function startMission(materialId) {
     completedAt: 0,
     fuelCost: cfg.fuelCost,
     expectedYield: Math.min(cfg.baseYield, cargoCapacity()),
-    originScene: "station",
-    targetScene: cfg.targetScene,
+    targetSystemId,
   };
 
   logEvent("Mission started: " + cfg.name + ".");
-  logEvent("Ship departed Asterion Station. Fuel: -" + cfg.fuelCost + " cr.");
+  logEvent("Ship departed for the " + STAR_SYSTEMS[targetSystemId].name +
+    " system. Fuel: -" + cfg.fuelCost + " cr.");
   saveState();
   return { ok: true };
 }
@@ -145,6 +161,9 @@ function startCourierMission(offerId) {
   const now = Date.now();
   const durationMs = offer.durationSeconds * reactorMultiplier() * 1000;
   const endsAt = now + durationMs;
+  // off-map waypoint the ship flies to and back (random heading)
+  const destAngle = Math.random() * Math.PI * 2;
+  const destDist = randInt(COURIER_DEST_DISTANCE.min, COURIER_DEST_DISTANCE.max);
 
   GameState.player.credits -= offer.fuelCost;
   GameState.currentMission = {
@@ -163,8 +182,10 @@ function startCourierMission(offerId) {
     rewardCredits: offer.rewardCredits,
     rewardMaterialId: offer.rewardMaterialId,
     rewardMaterialQty: offer.rewardMaterialQty,
-    originScene: "station",
-    targetScene: "transit",
+    destPos: {
+      x: Math.round(Math.cos(destAngle) * destDist),
+      y: Math.round(Math.sin(destAngle) * destDist),
+    },
   };
 
   // replace the taken contract so the board stays full
@@ -226,19 +247,21 @@ function completeMissionIfDone(now) {
     logEvent("Mission complete: +" + mission.expectedYield + " " + mat.name + ".");
   }
   GameState.currentMission = null;
-  GameState.currentScene = "station";
   saveState();
   return mission;
 }
 
-// Scene the game should be showing, derived from mission phase.
-function deriveScene(now) {
+// Human-readable location for the top bar, derived from mission phase.
+function currentLocationName(now) {
   const mission = GameState.currentMission;
-  if (!mission) return "station";
+  if (!mission) return "Asterion Station";
   const phase = missionPhase(mission, now);
-  if (phase === "departing" || phase === "returning" || phase === "travelling") return "transit";
-  if (phase === "mining") return mission.targetScene;
-  return "station";
+  if (phase === "complete") return "Asterion Station";
+  if (mission.type === "courier") return "Deep Space — " + mission.destination;
+  const sys = STAR_SYSTEMS[missionTargetSystemId(mission)];
+  if (phase === "departing") return "In Transit — " + sys.name + " System";
+  if (phase === "mining") return sys.name + " System";
+  return "In Transit — Asterion Station";
 }
 
 // ---------- market ----------
