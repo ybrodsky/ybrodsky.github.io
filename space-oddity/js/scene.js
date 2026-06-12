@@ -17,6 +17,11 @@ const Scene = (() => {
 
   const ISO_SQUASH = MAP_ISO_SQUASH; // isometric tilt: orbits are squashed vertically
   const ZOOM_MAX = 3.0;
+  const STATION_WORLD = 132;     // station image diameter in design px (multiplied by stScale)
+  const STATION_SPIN = 0.00008;  // radians/ms — slow clockwise rotation
+
+  const stationImg = new Image();
+  stationImg.src = "assets/station.png";
   const CAM_RATE = 0.0015;     // exponential approach rate per ms (auto camera)
   const HEADING_RATE = 0.004;  // ship rotation smoothing
   const DOCKED_VIEW_RADIUS = 430; // world units visible around the docked ship
@@ -291,84 +296,12 @@ const Scene = (() => {
   }
 
   function drawStation(t, x, y, scale) {
+    if (!stationImg.complete || !stationImg.naturalWidth) return;
+    const size = STATION_WORLD * scale;
     ctx.save();
     ctx.translate(x, y);
-    ctx.scale(scale, scale);
-
-    // rotating ring assembly
-    ctx.save();
-    ctx.rotate(t * 0.00008);
-
-    ctx.strokeStyle = "rgba(120, 200, 220, 0.8)";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(0, 0, 48, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.strokeStyle = "rgba(120, 200, 220, 0.3)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.arc(0, 0, 41, 0, Math.PI * 2);
-    ctx.stroke();
-
-    ctx.strokeStyle = "rgba(120, 200, 220, 0.6)";
-    ctx.lineWidth = 2;
-    for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2;
-      const ca = Math.cos(a), sa = Math.sin(a);
-      ctx.beginPath();
-      ctx.moveTo(ca * 16, sa * 16);
-      ctx.lineTo(ca * 48, sa * 48);
-      ctx.stroke();
-      ctx.fillStyle = "rgba(25, 55, 78, 0.95)";
-      ctx.beginPath();
-      ctx.arc(ca * 30, sa * 30, 4.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-    }
-
-    for (let i = 0; i < 12; i++) {
-      const a = (i / 12) * Math.PI * 2;
-      const on = (i + Math.floor(t / 900)) % 3 !== 0;
-      ctx.fillStyle = on ? "rgba(255, 220, 150, 0.9)" : "rgba(255, 220, 150, 0.15)";
-      ctx.beginPath();
-      ctx.arc(Math.cos(a) * 44.5, Math.sin(a) * 44.5, 1.6, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.restore();
-
-    // central hub (does not rotate)
-    const g = ctx.createRadialGradient(-5, -5, 2, 0, 0, 17);
-    g.addColorStop(0, "#4a7a9a");
-    g.addColorStop(0.6, "#1c3c54");
-    g.addColorStop(1, "#0a1c2c");
-    ctx.fillStyle = g;
-    ctx.strokeStyle = "rgba(120, 200, 220, 0.8)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(0, 0, 16, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = "rgba(150, 230, 255, 0.8)";
-    for (let i = -2; i <= 2; i++) {
-      ctx.fillRect(i * 5 - 1.5, -2, 3, 3.5);
-    }
-
-    ctx.strokeStyle = "rgba(120, 200, 220, 0.7)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(0, -16);
-    ctx.lineTo(0, -32);
-    ctx.moveTo(-4, -26);
-    ctx.lineTo(4, -26);
-    ctx.stroke();
-    if (Math.floor(t / 700) % 2 === 0) {
-      ctx.fillStyle = "#ff5a5a";
-      ctx.shadowColor = "#ff5a5a";
-      ctx.shadowBlur = 8;
-      ctx.beginPath();
-      ctx.arc(0, -33, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    ctx.rotate(t * STATION_SPIN); // canvas y-down: positive angle = clockwise
+    ctx.drawImage(stationImg, -size / 2, -size / 2, size, size);
     ctx.restore();
   }
 
@@ -456,7 +389,7 @@ const Scene = (() => {
         const st = w2s(stationWorldPos(t));
         const stScale = z * 0.62;
         drawStation(t, st.x, st.y, stScale);
-        if (z > 0.45) drawLabel(HOME_STATION_NAME, st.x, st.y + 48 * stScale + 12, 0.6);
+        if (z > 0.45) drawLabel(HOME_STATION_NAME, st.x, st.y + (STATION_WORLD / 2) * stScale + 12, 0.6);
       } else {
         drawPlanet(p.x, p.y, r, p.b.c1, p.b.c2);
       }
@@ -637,7 +570,7 @@ const Scene = (() => {
     // mirror vertically when facing left so the ship is never upside-down
     const flip = Math.cos(heading) < 0;
     shipWrap.style.left = (s.x - 75) + "px";
-    shipWrap.style.top = (s.y - 34) + "px";
+    shipWrap.style.top = (s.y - 25.5) + "px";
     shipWrap.style.rotate = heading + "rad";
     shipWrap.style.scale = flip ? scale + " " + (-scale) : String(scale);
   }

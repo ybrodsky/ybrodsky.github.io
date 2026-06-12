@@ -290,14 +290,38 @@ html, body {
 
 /* ---------- ship ---------- */
 
-/* positioned/scaled/rotated every frame by scene.js */
+/* positioned/scaled/rotated every frame by scene.js.
+   The 376x128 module artwork is scaled down to a 150x51 display box. */
 #ship-wrap {
   position: absolute;
   left: 50%;
   top: 50%;
+  width: 150px;
+  height: 51px;
   z-index: 3;
   filter: drop-shadow(0 0 10px rgba(38, 198, 255, 0.25));
 }
+
+/* natural-size module layout: reactor | cargo | drill (left -> right) */
+#ship-body {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 376px;
+  height: 128px;
+  transform: scale(0.398936);
+  transform-origin: top left;
+}
+
+#ship-body img {
+  position: absolute;
+  top: 0;
+  display: block;
+}
+
+#part-reactor { left: 0; }
+#part-cargo   { left: 128px; }
+#part-drill   { left: 248px; }
 
 #ship-wrap.docked { animation: ship-bob 5s ease-in-out infinite; }
 #ship-wrap.mining { animation: ship-bob 7s ease-in-out infinite; }
@@ -316,35 +340,40 @@ html, body {
 #ship-wrap.flying .ship-part,
 #ship-wrap.mining .ship-part { cursor: default; }
 
-.reactor-core { animation: core-pulse 1.6s ease-in-out infinite; }
-
-@keyframes core-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
-}
-
-.nav-light { animation: nav-blink 2.4s steps(1) infinite; }
-.nav-light.delay { animation-delay: 1.2s; }
-
-@keyframes nav-blink {
-  0%, 60% { opacity: 1; }
-  60.01%, 100% { opacity: 0.15; }
-}
-
-#ship-wrap.mining .drill-bit { animation: drill-shake 0.1s linear infinite; }
+/* drill rattles while mining */
+#ship-wrap.mining #part-drill { animation: drill-shake 0.1s linear infinite; }
 
 @keyframes drill-shake {
   0%, 100% { transform: translateY(0); }
-  25% { transform: translateY(-0.7px); }
-  75% { transform: translateY(0.7px); }
+  25% { transform: translateY(-1.5px); }
+  75% { transform: translateY(1.5px); }
 }
 
-#engine-flame { opacity: 0.35; transition: opacity 0.4s; }
-#ship-wrap.flying #engine-flame { opacity: 1; animation: flame-flicker 0.15s infinite alternate; }
+/* animated thrust sprite (5 frames of 96x128), tucked behind the reactor
+   nozzle and looping only while the ship is in transit */
+#ship-thrust {
+  position: absolute;
+  left: -96px;
+  top: 0;
+  width: 96px;
+  height: 128px;
+  background-image: url(../assets/thrust_spritesheet.png);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 480px 128px;
+  opacity: 0;
+  transition: opacity 0.25s;
+  pointer-events: none;
+}
 
-@keyframes flame-flicker {
-  from { transform: scaleX(1); }
-  to { transform: scaleX(1.4); }
+#ship-wrap.flying #ship-thrust {
+  opacity: 1;
+  animation: thrust-cycle 0.45s steps(5) infinite;
+}
+
+@keyframes thrust-cycle {
+  from { background-position: 0 0; }
+  to   { background-position: -480px 0; }
 }
 
 #ship-tooltip {
