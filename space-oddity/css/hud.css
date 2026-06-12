@@ -47,6 +47,9 @@ html, body {
 #right-panel { grid-area: right; }
 #bottom-log { grid-area: bottom; }
 
+/* mobile-only chrome — hidden on desktop, switched on by the media query below */
+#mobile-nav, #mobile-backdrop { display: none; }
+
 #left-panel, #right-panel {
   display: flex;
   flex-direction: column;
@@ -455,3 +458,139 @@ html, body {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(38, 198, 255, 0.3); border-radius: 3px; }
+
+/* =====================================================
+   MOBILE — collapse the three-column HUD into a full-screen
+   star map with bottom-sheet drawers driven by a tab bar.
+   ===================================================== */
+
+@media (max-width: 820px) {
+  /* Single column: compact top bar over a full-height scene.
+     The side panels and log leave the grid and become sheets. */
+  #app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "top"
+      "center";
+    padding: 6px;
+    padding-bottom: 62px;   /* clearance for the fixed nav bar */
+    gap: 6px;
+  }
+
+  /* top bar wraps instead of overflowing; separators only clutter */
+  #topbar {
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  .topbar-sep { display: none; }
+  .topbar-item { white-space: nowrap; }
+
+  /* ----- bottom-sheet drawers ----- */
+  #left-panel, #right-panel, #bottom-log {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 56px;           /* rest on top of the nav bar */
+    z-index: 40;
+    margin: 0 6px;
+    max-height: 70vh;
+    padding: 12px;
+    border-radius: 14px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    box-shadow: 0 -10px 34px rgba(0, 0, 0, 0.6), var(--panel-glow);
+    overflow-y: auto;
+    transform: translateY(118%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.28s ease, opacity 0.28s ease;
+  }
+
+  /* the log sheet scrolls as one piece rather than a nested 100% box */
+  #bottom-log #log-lines { height: auto; }
+
+  /* the ops sheet keeps its MINE/MARKET/UPGRADE tabs pinned while scrolling */
+  #right-panel { padding-top: 0; }
+  #right-panel #panel-tabs {
+    position: sticky;
+    top: 0;
+    margin: 0 -12px;        /* span the sheet's horizontal padding */
+    padding: 12px;
+    background: var(--panel-bg);
+    border-radius: 14px 14px 0 0;
+    z-index: 1;
+  }
+  #right-widget { overflow: visible; flex: none; }
+
+  /* reveal whichever sheet the nav selected */
+  body[data-mobile-sheet="status"] #left-panel,
+  body[data-mobile-sheet="ops"]    #right-panel,
+  body[data-mobile-sheet="log"]    #bottom-log {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* tap-away backdrop behind any open sheet */
+  #mobile-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: rgba(2, 5, 13, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+  }
+  body[data-mobile-sheet="status"] #mobile-backdrop,
+  body[data-mobile-sheet="ops"]    #mobile-backdrop,
+  body[data-mobile-sheet="log"]    #mobile-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* ----- bottom tab bar ----- */
+  #mobile-nav {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    height: 56px;
+    background: rgba(4, 10, 22, 0.96);
+    border-top: 1px solid var(--panel-border);
+    box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.5);
+  }
+  .mnav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .mnav-btn:active { background: rgba(38, 198, 255, 0.08); }
+  .mnav-ico { font-size: 19px; line-height: 1; }
+  .mnav-btn.active {
+    color: var(--cyan);
+    text-shadow: 0 0 10px rgba(38, 198, 255, 0.6);
+  }
+
+  /* keep the recenter button clear of the nav bar */
+  #map-controls { right: 8px; bottom: 64px; }
+
+  /* 16px inputs stop iOS from auto-zooming the page on focus */
+  .hud-input { font-size: 16px; width: 72px; }
+}

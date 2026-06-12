@@ -18,7 +18,7 @@ const Scene = (() => {
   const ISO_SQUASH = MAP_ISO_SQUASH; // isometric tilt: orbits are squashed vertically
   const ZOOM_MAX = 3.0;
   const STATION_WORLD = 132;     // station image diameter in design px (multiplied by stScale)
-  const STATION_SPIN = 0.00008;  // radians/ms — slow clockwise rotation
+  const STATION_SPIN = 0.00018;  // radians/ms — steady clockwise spin (~35s/rev)
 
   const stationImg = new Image();
   stationImg.src = "assets/station.png";

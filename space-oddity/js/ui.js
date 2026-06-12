@@ -7,6 +7,25 @@
 const UI = (() => {
   const el = (id) => document.getElementById(id);
 
+  // ---------- mobile bottom-sheet drawers ----------
+  // Only visible under the mobile media query; on desktop the attribute
+  // is inert (the panels keep their grid positions).
+
+  function syncNav(name) {
+    document.querySelectorAll('#mobile-nav .mnav-btn').forEach((b) => {
+      b.classList.toggle('active', b.dataset.sheet === name);
+    });
+  }
+
+  function openSheet(name) {
+    document.body.dataset.mobileSheet = name;
+    syncNav(name);
+  }
+
+  function toggleSheet(name) {
+    openSheet(document.body.dataset.mobileSheet === name ? '' : name);
+  }
+
   // ---------- top bar ----------
 
   function renderTopBar(now) {
@@ -401,6 +420,12 @@ const UI = (() => {
   // ---------- event wiring ----------
 
   function bindEvents() {
+    // mobile bottom-sheet nav
+    document.querySelectorAll('#mobile-nav .mnav-btn').forEach((b) => {
+      b.addEventListener('click', () => toggleSheet(b.dataset.sheet));
+    });
+    el('mobile-backdrop').addEventListener('click', () => openSheet(''));
+
     // tabs
     document.querySelectorAll('#panel-tabs .tab').forEach((b) => {
       b.addEventListener('click', () => {
@@ -419,11 +444,13 @@ const UI = (() => {
         const res = startMission(btn.dataset.startMission);
         if (!res.ok) return flashError(res.reason);
         Scene.focusShip();
+        openSheet(''); // reveal the departing ship on mobile
         renderAll();
       } else if (btn.dataset.acceptCourier) {
         const res = startCourierMission(btn.dataset.acceptCourier);
         if (!res.ok) return flashError(res.reason);
         Scene.focusShip();
+        openSheet('');
         renderAll();
       } else if (btn.dataset.sell || btn.dataset.buy) {
         const id = btn.dataset.sell || btn.dataset.buy;
@@ -458,6 +485,7 @@ const UI = (() => {
         GameState.selectedPanel = 'upgrade';
         GameState.selectedShipPart = part;
         saveState();
+        openSheet('ops'); // surface the upgrade panel on mobile
         renderAll();
       });
       g.addEventListener('mouseenter', () => {

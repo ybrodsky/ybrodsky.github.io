@@ -82,6 +82,16 @@
     <div id="log-lines"></div>
   </footer>
 
+  <!-- ===== MOBILE NAV (small screens only) =====
+       On phones the side panels and log collapse into bottom-sheet
+       drawers opened from this bar, keeping the star map full-screen. -->
+  <div id="mobile-backdrop"></div>
+  <nav id="mobile-nav">
+    <button class="mnav-btn" data-sheet="status"><span class="mnav-ico">🛰</span>STATUS</button>
+    <button class="mnav-btn" data-sheet="ops"><span class="mnav-ico">⛏</span>OPS</button>
+    <button class="mnav-btn" data-sheet="log"><span class="mnav-ico">📡</span>LOG</button>
+  </nav>
+
 </div>
 
 <div id="scanlines"></div>
