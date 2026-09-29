@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interlude craft planner</title>
+<style>
+:root{
+  --bg:#10141d; --col:#171d29; --rule:#2a3344; --rule-soft:#222a39;
+  --text:#dbe0e9; --dim:#8590a4; --faint:#5b6577;
+  --gold:#d0ab3e; --short:#e06a4c; --ok:#5fae7f;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:14px/1.4 "Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+
+header{padding:10px 16px;border-bottom:1px solid var(--rule);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:relative}
+h1{font:600 17px/1.2 Georgia,"Times New Roman",serif;margin:0 6px 0 0;color:var(--gold)}
+input,select,button{background:var(--bg);color:var(--text);border:1px solid var(--rule);
+  border-radius:3px;padding:5px 7px;font:inherit}
+#search{width:240px}
+button{background:var(--col);color:var(--dim);cursor:pointer}
+button:hover{color:var(--gold);border-color:var(--gold)}
+header .spacer{flex:1}
+.status{color:var(--faint);font-size:12.5px}
+.status.err{color:var(--short)}
+
+.results{position:absolute;top:100%;left:16px;z-index:5;width:340px;max-height:330px;
+  overflow:auto;background:var(--col);border:1px solid var(--rule);border-radius:0 0 4px 4px;
+  box-shadow:0 8px 20px rgba(0,0,0,.5)}
+.results div{padding:6px 10px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--rule-soft);
+  display:flex;justify-content:space-between;gap:8px}
+.results div:hover{background:#222b3b;color:var(--gold)}
+.results .g{color:var(--faint);font-size:11px;text-transform:uppercase}
+.results .empty{color:var(--faint);cursor:default}
+
+.picked{display:flex;gap:7px;flex-wrap:wrap;padding:9px 16px;
+  border-bottom:1px solid var(--rule);min-height:42px;align-items:center}
+.picked .none{color:var(--faint);font-size:13px}
+.chip{display:flex;align-items:center;gap:6px;background:var(--col);
+  border:1px solid var(--rule);border-radius:3px;padding:3px 4px 3px 9px;font-size:13px}
+.chip b{font-weight:600}
+.chip input{width:44px;padding:1px 4px;font-size:12.5px;text-align:right;
+  font-variant-numeric:tabular-nums}
+.chip select{padding:1px 3px;font-size:11.5px;color:var(--dim)}
+.chip button{background:none;border:none;color:var(--faint);font-size:15px;
+  line-height:1;padding:0 4px}
+.chip button:hover{color:var(--short)}
+
+.board{display:flex;gap:10px;padding:12px 16px 20px;overflow-x:auto;align-items:flex-start}
+.col{flex:1 1 250px;min-width:250px;background:var(--col);
+  border:1px solid var(--rule);border-radius:4px;padding:7px 8px 5px}
+.col h2{font:600 12px/1.3 inherit;margin:0 0 5px;color:var(--dim)}
+
+.head,.row{display:grid;grid-template-columns:1fr 46px 58px 48px;gap:6px;align-items:center}
+.head{font-size:10.5px;color:var(--faint);padding-bottom:3px;border-bottom:1px solid var(--rule)}
+.head span:not(:first-child){text-align:right}
+.row{padding:2.5px 0;border-bottom:1px solid var(--rule-soft);font-variant-numeric:tabular-nums}
+.row:last-child{border-bottom:none}
+.row:hover{background:#1c2431}
+.row .nm{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .need{text-align:right;font-size:12.5px;color:var(--dim)}
+.row input[type=number]{width:100%;padding:2px 5px;font-size:12.5px;text-align:right;
+  font-variant-numeric:tabular-nums}
+.row .miss{text-align:right;font-size:13px;font-weight:700}
+.miss.short{color:var(--short)}
+.miss.done{color:var(--ok);font-weight:400}
+.row.covered .nm{color:var(--faint)}
+.bulk{color:var(--faint);font-size:10px;margin-left:3px}
+.blank{padding:34px 16px;color:var(--faint);font-size:13.5px;max-width:640px}
+
+footer{padding:0 16px 28px;color:var(--faint);font-size:12px;max-width:900px}
+footer b{color:var(--dim);font-weight:600}
+footer a{color:var(--dim)}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Interlude craft planner</h1>
+  <input type="text" id="search" placeholder="Search recipes&hellip;" autocomplete="off">
+  <span class="spacer"></span>
+  <span class="status" id="status"></span>
+  <button onclick="clearPicked()">Clear selection</button>
+  <button onclick="clearHave()">Clear my materials</button>
+  <button onclick="refreshRecipes()" title="Drop the local copy of the recipe data and fetch it again">Refresh recipes</button>
+  <div class="results" id="results" style="display:none"></div>
+</header>
+
+<div class="picked" id="picked"></div>
+<div class="board" id="board"></div>
+
+<footer>
+  Recipes come live from <a href="https://l2api.dev" target="_blank" rel="noopener">l2api.dev</a>
+  (Interlude data). The search returns recipes only &mdash; type part of what you want to make,
+  pick the success rate you have, and its whole chain is resolved down to raw materials. Fill in <b>Have</b> anywhere and everything updates &mdash; stock of a crafted
+  material also removes the base materials underneath it, and anything shared between
+  several picks is counted once. Items with more than one recipe get a success-rate
+  dropdown on their chip.
+  The recipe scroll itself shows up as a base material, because the data lists it as one.
+  Everything you type, plus a local copy of every recipe fetched, is kept in an IndexedDB
+  database in this browser, so a reload costs no network calls and your counts survive
+  going offline.
+</footer>
+
+<script>
+"use strict";
+
+const API = "https://l2api.dev/api/interlude";
+
+/* ---------------- polite fetching ---------------------------------
+   The API allows 60 requests per 10s. Keep a few in flight, space
+   them out, cache every item, and back off on a 429.
+-------------------------------------------------------------------- */
+
+const live = new Map();          // in-memory promises for this session
+let inFlight = 0, lastCall = 0;
+const waiters = [];
+
+function slot(){
+  return new Promise(go => { waiters.push(go); pump(); });
+}
+function pump(){
+  if(!waiters.length || inFlight >= 5) return;
+  const wait = Math.max(0, 110 - (Date.now() - lastCall));
+  setTimeout(() => {
+    const go = waiters.shift();
+    if(!go) return;
+    inFlight++; lastCall = Date.now();
+    go();
+    pump();
+  }, wait);
+}
+
+async function apiGet(path, tries){
+  tries = tries || 0;
+  await slot();
+  try{
+    const r = await fetch(API + path);
+    if(r.status === 429 && tries < 4){
+      inFlight--; pump();
+      await new Promise(s => setTimeout(s, 900 * (tries + 1)));
+      return apiGet(path, tries + 1);
+    }
+    if(!r.ok) throw new Error("API " + r.status);
+    const j = await r.json();
+    inFlight--; pump();
+    return j.data;
+  }catch(err){
+    inFlight--; pump();
+    throw err;
+  }
+}
+
+function getItem(id){
+  if(live.has(id)) return live.get(id);
+  const p = (async () => {
+    const hit = await store.readItem(id);
+    if(hit) return hit;
+    const d = await apiGet("/items/" + id);
+    store.writeItem(id, d);
+    return d;
+  })().catch(e => { live.delete(id); throw e; });
+  live.set(id, p);
+  return p;
+}
+
+/* ---------------- state -------------------------------------------- */
+
+let picked   = {};   // itemId -> { qty, recipeItemId }
+let have     = {};   // itemId -> how many you own
+
+let RECIPES = {};    // itemId -> { yield, ing:{id:count}, recipeName }
+let NAMES   = {};    // itemId -> name
+let CHOICES = {};    // itemId -> craftedBy rows
+let ALL     = [];
+
+const $ = id => document.getElementById(id);
+const fmt = n => (n || 0).toLocaleString("en-US");
+
+function setStatus(text, bad){
+  const el = $("status");
+  el.textContent = text || "";
+  el.className = "status" + (bad ? " err" : "");
+}
+
+/* ---------------- resolving the chain -------------------------------- */
+
+async function resolveTree(){
+  RECIPES = {}; CHOICES = {};
+  const seen = new Set();
+
+  async function walk(id){
+    if(seen.has(id)) return;
+    seen.add(id);
+
+    const d = await getItem(id);
+    NAMES[id] = d.name;
+
+    const options = d.craftedBy || [];
+    if(!options.length) return;
+    CHOICES[id] = options;
+
+    let chosen = picked[id] && picked[id].recipeItemId;
+    if(!chosen || !options.some(o => o.recipeItemId === chosen)){
+      chosen = options.slice().sort((a,b) => b.successRate - a.successRate)[0].recipeItemId;
+      if(picked[id]) picked[id].recipeItemId = chosen;
+    }
+
+    const scroll = await getItem(chosen);
+    const c = scroll.crafting;
+    if(!c) return;
+
+    const ing = {};
+    c.ingredients.forEach(g => { ing[g.itemId] = g.count; NAMES[g.itemId] = g.name; });
+    RECIPES[id] = { yield: c.productCount || 1, ing, recipeName: scroll.name };
+
+    await Promise.all(c.ingredients.map(g => walk(g.itemId)));
+  }
+
+  await Promise.all(Object.keys(picked).map(id => walk(+id)));
+
+  // parents before children
+  const done = new Set(), out = [];
+  const visit = n => {
+    if(done.has(n)) return;
+    done.add(n);
+    const r = RECIPES[n];
+    if(r) for(const i in r.ing) visit(+i);
+    out.push(n);
+  };
+  Object.keys(picked).map(Number).forEach(visit);
+  ALL = out.reverse();
+}
+
+const depthMemo = new Map();
+function depth(id){
+  if(depthMemo.has(id)) return depthMemo.get(id);
+  depthMemo.set(id, 0);                 // guards any cycle in the data
+  const r = RECIPES[id];
+  let d = 0;
+  if(r) for(const i in r.ing) d = Math.max(d, depth(+i) + 1);
+  depthMemo.set(id, d);
+  return d;
+}
+
+/* ---------------- the calculation --------------------------------------
+   Walk from the picked items downwards. A material is only expanded once
+   every parent that wants it has been counted, so anything used in more
+   than one place is summed exactly once. Stock is taken off before the
+   remainder passes further down the chain.
+------------------------------------------------------------------------ */
+
+function solve(){
+  const need = {}, missing = {};
+  for(const id in picked) need[id] = picked[id].qty;
+  for(const id of ALL){
+    const rest = Math.max(0, (need[id] || 0) - (have[id] || 0));
+    missing[id] = rest;
+    const r = RECIPES[id];
+    if(r && rest > 0){
+      const runs = Math.ceil(rest / r.yield);
+      for(const i in r.ing) need[i] = (need[i] || 0) + runs * r.ing[i];
+    }
+  }
+  return { need, missing };
+}
+
+/* ---------------- search ------------------------------------------------ */
+
+let searchTimer = null;
+
+$("search").oninput = e => {
+  const q = e.target.value.trim();
+  clearTimeout(searchTimer);
+  if(q.length < 2){ $("results").style.display = "none"; return; }
+  searchTimer = setTimeout(() => runSearch(q), 260);
+};
+document.addEventListener("click", e => {
+  if(!e.target.closest("#results") && e.target.id !== "search")
+    $("results").style.display = "none";
+});
+
+async function runSearch(q){
+  const box = $("results");
+  box.innerHTML = '<div class="empty">Searching&hellip;</div>';
+  box.style.display = "block";
+  try{
+    // every recipe scroll is an etcitem whose name starts with "Recipe".
+    // Ask for a wide page and keep only those, so ordinary items never show up.
+    const rows = await apiGet("/items?q=" + encodeURIComponent(q) + "&type=etcitem&limit=200");
+    const recipes = rows.filter(it => /^recipe\b/i.test(it.name || "")).slice(0, 40);
+    box.innerHTML = "";
+    if(!recipes.length){
+      box.innerHTML = '<div class="empty">No recipe matches that.</div>';
+      return;
+    }
+    recipes.forEach(it => {
+      const d = document.createElement("div");
+      const n = document.createElement("span");
+      n.textContent = it.name.replace(/^Recipe\s*[:\-]\s*/i, "");
+      const g = document.createElement("span");
+      g.className = "g";
+      const rate = (it.name.match(/\((\d+)%\)/) || [])[1];
+      g.textContent = rate ? rate + "%" : "recipe";
+      d.append(n, g);
+      d.onclick = () => {
+        box.style.display = "none";
+        $("search").value = "";
+        addRecipe(it.id);
+      };
+      box.appendChild(d);
+    });
+  }catch(err){
+    box.innerHTML = '<div class="empty">Search failed.</div>';
+  }
+}
+
+async function addRecipe(recipeItemId){
+  setStatus("Loading recipe\u2026");
+  try{
+    const scroll = await getItem(recipeItemId);
+    const c = scroll.crafting;
+    if(!c){
+      setStatus(scroll.name + " carries no crafting data.", true);
+      return;
+    }
+    const id = c.productItemId;
+    NAMES[id] = c.productName;
+    if(picked[id]){
+      picked[id].qty += 1;
+      picked[id].recipeItemId = recipeItemId;   // honour the version just clicked
+    } else {
+      picked[id] = { qty: 1, recipeItemId };
+    }
+    await redraw();
+  }catch(err){
+    setStatus("Could not reach the API.", true);
+  }
+}
+
+/* ---------------- rendering ---------------------------------------------- */
+
+let cells = {};
+
+function renderPicked(){
+  const box = $("picked");
+  box.innerHTML = "";
+  const ids = Object.keys(picked);
+  if(!ids.length){
+    box.innerHTML = '<span class="none">Nothing selected \u2014 search for an item above.</span>';
+    return;
+  }
+  ids.forEach(id => {
+    const chip = document.createElement("div");
+    chip.className = "chip";
+
+    const b = document.createElement("b");
+    b.textContent = NAMES[id] || ("item " + id);
+
+    const q = document.createElement("input");
+    q.type = "number"; q.min = "1"; q.step = "1"; q.value = picked[id].qty;
+    q.setAttribute("aria-label", "How many");
+    q.oninput = () => {
+      picked[id].qty = Math.max(1, parseInt(q.value, 10) || 1);
+      refresh(); saveState();
+    };
+    chip.append(b, q);
+
+    const opts = CHOICES[id] || [];
+    if(opts.length > 1){
+      const s = document.createElement("select");
+      opts.slice().sort((a,c) => c.successRate - a.successRate).forEach(o => {
+        const op = document.createElement("option");
+        op.value = o.recipeItemId;
+        op.textContent = o.successRate + "%";
+        s.appendChild(op);
+      });
+      s.value = picked[id].recipeItemId;
+      s.title = "Which recipe to use";
+      s.onchange = () => { picked[id].recipeItemId = +s.value; redraw(); };
+      chip.appendChild(s);
+    }
+
+    const x = document.createElement("button");
+    x.textContent = "\u00d7"; x.title = "Remove";
+    x.onclick = () => { delete picked[id]; redraw(); };
+    chip.appendChild(x);
+
+    box.appendChild(chip);
+  });
+}
+
+function build(){
+  const board = $("board");
+  board.innerHTML = "";
+  cells = {};
+
+  if(!Object.keys(picked).length){
+    board.innerHTML = '<div class="blank">Your material counts are kept. ' +
+      'Add an item and the chain reappears with everything you typed still in place.</div>';
+    return;
+  }
+
+  depthMemo.clear();
+
+  // the picked items live on the chips above, so the board shows materials only.
+  // An item that is both picked and an ingredient of another pick still gets a row.
+  const isIngredient = new Set();
+  ALL.forEach(id => {
+    const r = RECIPES[id];
+    if(r) for(const i in r.ing) isIngredient.add(+i);
+  });
+  const rows = ALL.filter(id => isIngredient.has(id));
+
+  let last = 0;
+  rows.forEach(id => { last = Math.max(last, depth(id)); });
+
+  for(let c = 0; c <= last; c++){
+    const ids = rows.filter(id => depth(id) === c)
+                    .sort((a,b) => (NAMES[a] || "").localeCompare(NAMES[b] || ""));
+    if(!ids.length) continue;
+
+    const col = document.createElement("div");
+    col.className = "col";
+    const h = document.createElement("h2");
+    h.textContent = c === 0 ? "Base materials" : "Step " + c;
+    col.appendChild(h);
+
+    const head = document.createElement("div");
+    head.className = "head";
+    head.innerHTML = "<span>Item</span><span>Need</span><span>Have</span><span>Miss</span>";
+    col.appendChild(head);
+
+    ids.forEach(id => {
+      const r = RECIPES[id];
+      const row = document.createElement("div");
+      row.className = "row";
+      if(r) row.title = r.recipeName + "\n" +
+        Object.keys(r.ing).map(i => r.ing[i] + " " + (NAMES[i] || i)).join(" + ") +
+        (r.yield > 1 ? "  \u2192 " + r.yield : "");
+
+      const nm = document.createElement("div");
+      nm.className = "nm";
+      nm.textContent = NAMES[id] || ("item " + id);
+      if(r && r.yield > 1){
+        const b = document.createElement("span");
+        b.className = "bulk"; b.textContent = "\u00d7" + r.yield;
+        nm.appendChild(b);
+      }
+
+      const need = document.createElement("div");
+      need.className = "need";
+
+      const inp = document.createElement("input");
+      inp.type = "number"; inp.min = "0"; inp.step = "1";
+      inp.value = have[id] || 0;
+      inp.setAttribute("aria-label", "How many " + (NAMES[id] || id) + " you have");
+      inp.oninput = () => {
+        have[id] = Math.max(0, parseInt(inp.value, 10) || 0);
+        refresh(); saveQty(id);
+      };
+
+      const miss = document.createElement("div");
+      miss.className = "miss";
+
+      row.append(nm, need, inp, miss);
+      col.appendChild(row);
+      cells[id] = { row, need, miss, input: inp };
+    });
+
+    board.appendChild(col);
+  }
+}
+
+function refresh(){
+  const s = solve();
+  for(const id in cells){
+    const c = cells[id];
+    const n = s.need[id] || 0;
+    const m = s.missing[id] || 0;
+    c.need.textContent = fmt(n);
+    c.miss.textContent = m > 0 ? fmt(m) : "\u2713";
+    c.miss.className = "miss " + (m > 0 ? "short" : "done");
+    c.row.classList.toggle("covered", m === 0);
+  }
+}
+
+let busy = false;
+async function redraw(){
+  if(busy) return;
+  busy = true;
+  setStatus(Object.keys(picked).length ? "Loading recipes\u2026" : "");
+  try{
+    await resolveTree();
+    setStatus("");
+  }catch(err){
+    setStatus("Could not load every recipe \u2014 some rows may be missing.", true);
+  }
+  renderPicked();
+  build();
+  refresh();
+  saveState();
+  busy = false;
+}
+
+function clearPicked(){ picked = {}; redraw(); }   // material counts stay
+async function clearHave(){
+  have = {};
+  for(const id in cells) cells[id].input.value = 0;
+  refresh();
+  await store.clearInventory();
+}
+
+/* ---------------- saved between visits ------------------------------------ */
+
+const DB_NAME = "l2-craft-planner";
+const DB_VER  = 1;
+const LS_KEY  = "l2-craft-planner-api-v1";
+const ITEM_TTL = 14 * 24 * 3600 * 1000;   // recipe data is immutable per API deploy
+
+let dbPromise = null;
+function openDB(){
+  if(dbPromise) return dbPromise;
+  dbPromise = new Promise((res, rej) => {
+    if(!window.indexedDB) return rej(new Error("no indexedDB"));
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      // one row per material, so a keystroke writes a few bytes, not the whole inventory
+      if(!db.objectStoreNames.contains("inventory")) db.createObjectStore("inventory", { keyPath:"id" });
+      // the plan: what is picked, what you buy rather than craft, and known names
+      if(!db.objectStoreNames.contains("plan"))      db.createObjectStore("plan");
+      // cached API item records — the bulky part, and why this is not localStorage
+      if(!db.objectStoreNames.contains("items"))     db.createObjectStore("items", { keyPath:"id" });
+    };
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+    req.onblocked = () => rej(new Error("blocked"));
+  }).catch(e => { dbPromise = null; throw e; });
+  return dbPromise;
+}
+
+function tx(db, name, mode){
+  return db.transaction(name, mode).objectStore(name);
+}
+function wrap(req){
+  return new Promise((res, rej) => {
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+/* Everything below degrades quietly: IndexedDB first, one localStorage blob
+   if it is unavailable (private windows, old browsers), memory if even that
+   is blocked. The app never breaks because storage does. */
+const store = {
+  db: null,
+  fallback: {},
+
+  async init(){
+    try{ this.db = await openDB(); }
+    catch(e){ this.db = null; }
+    await this.load();
+  },
+
+  async load(){
+    if(this.db){
+      try{
+        const [inv, plan] = await Promise.all([
+          wrap(tx(this.db, "inventory", "readonly").getAll()),
+          Promise.all(["picked","names"].map(k =>
+            wrap(tx(this.db, "plan", "readonly").get(k))))
+        ]);
+        have = {};
+        inv.forEach(r => { if(r.qty) have[r.id] = r.qty; });
+        picked = plan[0] || {};
+        NAMES  = plan[1] || {};
+        if(!inv.length && !Object.keys(picked).length) await this.migrate();
+        return;
+      }catch(e){ /* fall through to the blob */ }
+    }
+    try{
+      const v = localStorage.getItem(LS_KEY) || this.fallback[LS_KEY];
+      if(!v) return;
+      const d = JSON.parse(v);
+      picked = d.picked || {}; have = d.have || {};
+      NAMES = d.names || {};
+    }catch(e){}
+  },
+
+  // pick up anything an earlier version of this page left behind
+  async migrate(){
+    try{
+      const v = localStorage.getItem(LS_KEY);
+      if(!v) return;
+      const d = JSON.parse(v);
+      picked = d.picked || {}; have = d.have || {};
+      NAMES = d.names || {};
+      await this.savePlan();
+      for(const id in have) await this.saveQty(id, have[id]);
+    }catch(e){}
+  },
+
+  async saveQty(id, qty){
+    if(this.db){
+      try{
+        const s = tx(this.db, "inventory", "readwrite");
+        if(qty > 0) s.put({ id:String(id), qty });
+        else s.delete(String(id));
+        return;
+      }catch(e){}
+    }
+    this.blob();
+  },
+
+  async savePlan(){
+    if(this.db){
+      try{
+        const s = tx(this.db, "plan", "readwrite");
+        s.put(picked, "picked");
+        s.put(NAMES, "names");
+        return;
+      }catch(e){}
+    }
+    this.blob();
+  },
+
+  blob(){
+    const v = JSON.stringify({ picked, have, names: NAMES });
+    try{ localStorage.setItem(LS_KEY, v); }catch(e){ this.fallback[LS_KEY] = v; }
+  },
+
+  async readItem(id){
+    if(!this.db) return null;
+    try{
+      const row = await wrap(tx(this.db, "items", "readonly").get(String(id)));
+      if(row && Date.now() - row.t < ITEM_TTL) return row.data;
+    }catch(e){}
+    return null;
+  },
+
+  writeItem(id, data){
+    if(!this.db) return;
+    try{ tx(this.db, "items", "readwrite").put({ id:String(id), data, t:Date.now() }); }
+    catch(e){}
+  },
+
+  async clearItems(){
+    if(!this.db) return;
+    try{ await wrap(tx(this.db, "items", "readwrite").clear()); }catch(e){}
+  },
+
+  async clearInventory(){
+    if(this.db){
+      try{ await wrap(tx(this.db, "inventory", "readwrite").clear()); return; }catch(e){}
+    }
+    this.blob();
+  }
+};
+
+/* per-row debounce, so holding a key down does not queue a write per digit */
+const pending = {};
+function saveQty(id){
+  clearTimeout(pending[id]);
+  pending[id] = setTimeout(() => store.saveQty(id, have[id] || 0), 200);
+}
+let planTimer = null;
+function saveState(){
+  clearTimeout(planTimer);
+  planTimer = setTimeout(() => store.savePlan(), 200);
+}
+
+async function refreshRecipes(){
+  live.clear();
+  await store.clearItems();
+  setStatus("Re-reading recipes from the API\u2026");
+  await redraw();
+}
+
+(async function init(){
+  await store.init();
+  await redraw();
+})();
+</script>
+</body>
+</html>
